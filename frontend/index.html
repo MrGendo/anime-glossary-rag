@@ -8,7 +8,10 @@
 :root{--bg:#fafafa;--fg:#1a1a2e;--muted:#6b7280;--accent:#4f46e5;--card:#fff;--border:#e5e7eb}
 @media(prefers-color-scheme:dark){:root{--bg:#111118;--fg:#e5e7eb;--muted:#9ca3af;--accent:#818cf8;--card:#1a1a24;--border:#2d2d3a}}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,"Hiragino Sans","Noto Sans JP","Noto Sans SC",sans-serif;background:var(--bg);color:var(--fg);line-height:1.6}
+body{font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;background:var(--bg);color:var(--fg);line-height:1.6}
+/* 中日文分字体渲染：统一汉字（零/将/直/骨…）字形随语言不同，
+   默认栈走简体中文；标了 lang="ja" 的日文内容走日文字体栈 */
+:lang(ja){font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo","Noto Sans JP",sans-serif}
 .wrap{max-width:860px;margin:0 auto;padding:24px 16px 80px}
 header{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
 h1{font-size:22px}
@@ -41,7 +44,7 @@ footer{color:var(--muted);font-size:12px;margin-top:30px;text-align:center}
 <div class="wrap">
 <header><h1>动画术语知识库</h1><span class="badge">Layout / 原画 / 動画 职责边界</span></header>
 <div class="sub"><b>本知识库的小 topic（边界）：</b>日式动画制作中 <b>Layout（レイアウト）· 原画 · 動画（中割り）</b> 三个环节的<b>职责边界、输入输出、上下游交接与易混术语辨析</b>（含絵コンテ/演出/作画監督/動画検査/仕上げ检查/制作進行等直接相邻环节）。不含声优、音乐、宣发、商业模式、动画史。</div>
-<div class="sub">来源：《アニメーションの基礎知識大百科》（神村幸子，224页扫描 OCR，549 词条）+ B站《从零学动画01》转写（12 块）· 共 620 知识块</div>
+<div class="sub">来源：<span lang="ja">《アニメーションの基礎知識大百科》</span>（神村幸子，224页扫描 OCR，549 词条）+ B站《从零学动画01》转写（12 块）· 共 620 知识块</div>
 <div id="examples"></div>
 <form id="f"><input id="q" placeholder="例：レイアウト和絵コンテ有什么区别？" autocomplete="off"><button id="go">提问</button></form>
 <div id="out"></div>
@@ -49,8 +52,10 @@ footer{color:var(--muted);font-size:12px;margin-top:30px;text-align:center}
 </div>
 <script>
 const EX=["レイアウト（LO）是什么？","原画和動画的职责怎么区分？","動画チェック是做什么的？","中割り是什么作业？","作画監督有哪几类？","まき直し是什么意思？"];
+const JA_RE=/[\u3040-\u309f\u30a0-\u30ff]/; // 平假名/片假名 → 日文内容
+const jaAttr=s=>JA_RE.test(s||'')?' lang="ja"':'';
 const ex=document.getElementById('examples');
-EX.forEach(t=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.onclick=()=>{document.getElementById('q').value=t;ask(t)};ex.appendChild(b)});
+EX.forEach(t=>{const b=document.createElement('button');b.type='button';b.textContent=t;if(JA_RE.test(t))b.lang='ja';b.onclick=()=>{document.getElementById('q').value=t;ask(t)};ex.appendChild(b)});
 async function ask(question){
  const out=document.getElementById('out'),go=document.getElementById('go');
  go.disabled=true;out.innerHTML='<div class="card">检索与生成中…</div>';
@@ -58,13 +63,13 @@ async function ask(question){
   const r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question})});
   const d=await r.json();
   if(!r.ok){out.innerHTML=`<div class="card err">请求失败（${d.detail?.error||r.status}）· request_id=${d.detail?.request_id||''}</div>`;return}
-  let h=`<div class="card"><div class="answer ${d.refusal?'refusal':''}">${esc(d.answer||'')}</div>`;
+  let h=`<div class="card"><div class="answer ${d.refusal?'refusal':''}">${fmtAnswer(d.answer||'')}</div>`;
   h+=`<div class="meta"><span class="tag">${d.strategy}·top${d.top_k}</span><span class="tag">${d.model}</span><span>${d.latency_ms}ms</span><span>req: ${d.request_id}</span>${d.citation_parse_warning?'<span style="color:#b45309">⚠ 引用解析告警</span>':''}</div>`;
   if(d.citations&&d.citations.length){h+=`<details open><summary>引用来源（${d.citations.length}）</summary>`;
-   d.citations.forEach(c=>{h+=`<div class="cite"><b>【${c.label}】${esc(c.section_title)}</b> <span style="color:var(--muted)">${c.source_id}${c.page_number?' p.'+c.page_number:''}</span><div>${esc(c.snippet)}</div></div>`});
+   d.citations.forEach(c=>{h+=`<div class="cite"><b${jaAttr(c.section_title)}>【${c.label}】${esc(c.section_title)}</b> <span style="color:var(--muted)">${c.source_id}${c.page_number?' p.'+c.page_number:''}</span><div${jaAttr(c.snippet)}>${esc(c.snippet)}</div></div>`});
    h+='</details>'}
   h+=`<details><summary>检索证据（${d.retrieval.length}，含分数）</summary>`;
-  d.retrieval.forEach(x=>{h+=`<div class="hit"><div class="h-head"><b>${esc(x.section_title||x.chunk_id)}</b><span class="score">${x.score.toFixed(3)} · ${x.method}</span><span class="src">${x.source_id}${x.page_number?' p.'+x.page_number:''}</span></div><div class="snippet">${esc(x.snippet)}</div></div>`});
+  d.retrieval.forEach(x=>{h+=`<div class="hit"><div class="h-head"><b${jaAttr(x.section_title)}>${esc(x.section_title||x.chunk_id)}</b><span class="score">${x.score.toFixed(3)} · ${x.method}</span><span class="src">${x.source_id}${x.page_number?' p.'+x.page_number:''}</span></div><div class="snippet"${jaAttr(x.snippet)}>${esc(x.snippet)}</div></div>`});
   h+='</details></div>';
   out.innerHTML=h;
  }catch(e){out.innerHTML=`<div class="card err">网络错误：${esc(String(e))}</div>`}
@@ -72,6 +77,13 @@ async function ask(question){
 }
 document.getElementById('f').onsubmit=e=>{e.preventDefault();const q=document.getElementById('q').value.trim();if(q)ask(q)};
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+// 答案多为「日文段 + 【中文】段」双语结构：按该分界切分，
+// 日文段标 lang="ja" 走日文字体，中文段走默认中文字体——
+// 避免零/将/直等统一汉字被同一字体渲染成错误语言的字形
+function fmtAnswer(a){
+ const m=String(a).split(/\n(?=【中文】)/);
+ return m.map(seg=>JA_RE.test(seg)&&!seg.startsWith('【中文】')?`<span lang="ja">${esc(seg)}</span>`:`<span>${esc(seg)}</span>`).join('\n');
+}
 </script>
 </body>
 </html>
