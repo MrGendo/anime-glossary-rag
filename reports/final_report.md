@@ -11,7 +11,8 @@
 - 选择理由：原始资料（224 页术语集 + 全流程视频）对该主题证据密度最高；术语边界清晰，可构造带唯一证据锚点的评测题；职种细分术语是 LLM 长尾知识，预期存在可测量缺口（已由对照实验证实，见 §6）。
 - 知识库边界：IN=三环节及直接上下游（絵コンテ/演出/作監/動画検査/仕上げ检查/制作進行交接）；OUT=声优、音乐、商业模式、动画史、作品评介、3D 建模细节。
 - 公网 URL：**https://pac-estimation-oil-health.trycloudflare.com**（cloudflared quick tunnel；免账号隧道无 SLA，随本机进程存活；已做真实公网请求验证，见 §9）
-- 完成状态：数据处理✅ 评测集✅ 检索对照实验（B/C/D/E）✅ **答案层对照实验（A vs D）✅** Web/API✅（真实 LLM 模式）测试✅ 公网部署✅ 报告✅
+- GitHub 仓库：**https://github.com/MrGendo/anime-glossary-rag**（含 README/运行说明/.env.example；版权 PDF 与全量 OCR 数据未入库，重建脚本见 scripts/）
+- 完成状态：数据处理✅ 评测集✅ 检索对照实验（B/C/D/E）✅ **答案层对照实验（A vs D）✅** Web/API✅（真实 LLM 模式）测试✅ 公网部署✅ **GitHub 提交✅** 报告✅
 
 ## 2. 资料审查与选题依据
 
@@ -105,9 +106,11 @@ A 基线 6 道库外/证据不足题**全部硬答**（幻觉率 100%）；D 混
 
 ## 9. 部署与验证
 
-- 本机：uvicorn 127.0.0.1:8902（python3.14 venv），649→49 测试全绿。
+- 本机：uvicorn 127.0.0.1:8902（python3.14 venv）；最新提交后全量 pytest **57 passed, 1 skipped**。
 - 公网：cloudflared quick tunnel → **https://pac-estimation-oil-health.trycloudflare.com**
+- GitHub：**https://github.com/MrGendo/anime-glossary-rag**（161 文件，提交 7fc6b7b；已核验无密钥/无版权 PDF/无 data/raw）
 - 真实公网验证（scripts/72_public_verify.py 实测输出）：/api/health ok(620)；/api/ask 返回 req_1aa321d26d73、top hit g0534 レイアウト撮 p202 score 54.3；前端正常；**ZHIPU_API_KEY 不在前端出现**。
+- 交付前复验（2026-10-12 15:5x，重启加载 α=0.3 服务后）：/api/health ok(620, ZhipuClient, hybrid)；/api/ask 实测 req_0a7eb3d49878（タイムシート题，答出 1秒24分割/撮影伝票要点，top hits g0325 1.000/g0252 0.667/g0169 0.362 与本地 α=0.3 完全一致）；库外题 req_111ab2effeec 未编造人名、如实答「知识库无该具体信息」（refusal 标志 False，内容无幻觉，如实记录）。
 - 限制：quick tunnel 免账号（无 SLA、URL 随机、进程存活期有效）；本机无 Docker（Dockerfile 已备未实测）；未登录评审者可直接访问（无鉴权=按题目要求开放）。
 - 潜在成本：真 LLM 模式下 glm-4-flash 免费档；tunnel 免费；本机常驻进程约 300MB 内存。
 
@@ -121,7 +124,7 @@ A 基线 6 道库外/证据不足题**全部硬答**（幻觉率 100%）；D 混
 
 ## 12. 局限性与下一步
 
-- 答案层对照未跑（阻塞=独立 key）→ 到位后 1 小时内可出 A/D 组答案指标。
+- ~~答案层对照未跑（阻塞=独立 key）~~ 已完成（§6.4，scripts/81，glm-4-flash，60 题×2 组）。
 - 向量腿跨语弱 → 实验方向：日文查询改写、日英双语嵌入（multilingual-e5-base）、伪翻译查询扩展。
 - multi_chunk 0.62 → 多跳检索/查询分解。
 - 词头共享前缀（レイアウト vs レイアウト撮）exact-head boost 未做。
@@ -132,7 +135,7 @@ A 基线 6 道库外/证据不足题**全部硬答**（幻觉率 100%）；D 混
 
 ```bash
 uv venv .venv && uv pip install --python .venv/bin/python -r requirements.txt
-.venv/bin/python -m pytest tests/ -q                     # 49 passed
+.venv/bin/python -m pytest tests/ -q                     # 57 passed, 1 skipped
 .venv/bin/python -m uvicorn app.main:app --port 8902     # Mock 模式
 export ZHIPU_API_KEY=...                                 # 真实 LLM
 .venv/bin/python scripts/64_final_retrieval.py           # 检索对照复现

@@ -134,9 +134,10 @@ tests/          pytest（检索/生成）
 
 ## 部署
 
+- GitHub：https://github.com/MrGendo/anime-glossary-rag
+- 公网演示：https://pac-estimation-oil-health.trycloudflare.com（cloudflared quick tunnel，随本机进程存活）
 - 本机：uvicorn（上文）
 - Docker：`docker build -t anime-rag . && docker run -p 8000:8000 anime-rag`（本机无 Docker，未实测，见 final_report）
-- 公网：cloudflared tunnel（见 final_report 部署章节）
 
 ## 已知限制
 
