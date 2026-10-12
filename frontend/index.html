@@ -42,20 +42,28 @@ footer{color:var(--muted);font-size:12px;margin-top:30px;text-align:center}
 </head>
 <body>
 <div class="wrap">
-<header><h1>动画术语知识库</h1><span class="badge">Layout / 原画 / 動画 职责边界</span></header>
-<div class="sub"><b>本知识库的小 topic（边界）：</b>日式动画制作中 <b>Layout（レイアウト）· 原画 · 動画（中割り）</b> 三个环节的<b>职责边界、输入输出、上下游交接与易混术语辨析</b>（含絵コンテ/演出/作画監督/動画検査/仕上げ检查/制作進行等直接相邻环节）。不含声优、音乐、宣发、商业模式、动画史。</div>
+<header><h1>动画术语知识库</h1><span class="badge">Layout / 原画 / 动画（動画）职责边界</span></header>
+<div class="sub"><b>本知识库的小 topic（边界）：</b>日式动画制作中 <b>Layout（レイアウト）、原画、动画中割（動画・中割り）</b> 三个环节的<b>职责边界、输入输出、上下游交接与易混术语辨析</b>。相邻环节：分镜（絵コンテ）、演出、作画监督（作画監督）、动画检查（動画検査）、上色（仕上げ）、制作进行（制作進行）等。不含：声优、音乐、宣发、商业模式、动画史。</div>
 <div class="sub">来源：<span lang="ja">《アニメーションの基礎知識大百科》</span>（神村幸子，224页扫描 OCR，549 词条）+ B站《从零学动画01》转写（12 块）· 共 620 知识块</div>
 <div id="examples"></div>
-<form id="f"><input id="q" placeholder="例：レイアウト和絵コンテ有什么区别？" autocomplete="off"><button id="go">提问</button></form>
+<form id="f"><input id="q" placeholder="例：Layout（レイアウト）和分镜（絵コンテ）有什么区别？" autocomplete="off"><button id="go">提问</button></form>
 <div id="out"></div>
 <footer>回答仅基于知识库证据并带来源引用；证据不足时将拒答。</footer>
 </div>
 <script>
-const EX=["レイアウト（LO）是什么？","原画和動画的职责怎么区分？","動画チェック是做什么的？","中割り是什么作业？","作画監督有哪几类？","まき直し是什么意思？"];
+const EX=["Layout（レイアウト）是什么？","原画和动画（動画）的职责怎么区分？","动画检查（動画チェック）是做什么的？","中割（中割り）是什么作业？","作画监督（作画監督）有哪几类？","重画（まき直し）是什么意思？"];
 const JA_RE=/[\u3040-\u309f\u30a0-\u30ff]/; // 平假名/片假名 → 日文内容
 const jaAttr=s=>JA_RE.test(s||'')?' lang="ja"':'';
+// 词条级判断：PDF 词条标题是日文原词（含動画/作画等纯汉字词），视频块是中文转写
+const jaTitle=x=>(x&&x.source_id&&String(x.source_id).startsWith('pdf'))?' lang="ja"':'';
+// 中文句式规范：日文术语写成「中文说法（日文原词）」——括号组含假名或日文新字体特征字（動/監/絵…简体中文不用）即标为日文
+const JA_HINT=/[\u3040-\u309f\u30a0-\u30ff動監絵検進図済]/;
+const JA_PAREN=/（[^（）]*）|\([^()]*\)/g;
+const markJa=s=>String(s).replace(JA_PAREN,m=>JA_HINT.test(m)?`<span lang="ja">${m}</span>`:m);
 const ex=document.getElementById('examples');
-EX.forEach(t=>{const b=document.createElement('button');b.type='button';b.textContent=t;if(JA_RE.test(t))b.lang='ja';b.onclick=()=>{document.getElementById('q').value=t;ask(t)};ex.appendChild(b)});
+EX.forEach(t=>{const b=document.createElement('button');b.type='button';b.innerHTML=markJa(t);b.onclick=()=>{document.getElementById('q').value=t;ask(t)};ex.appendChild(b)});
+// 静态文案同样处理（badge/sub/footer 里的（日文原词）括号组）
+document.querySelectorAll('.badge,.sub,footer').forEach(el=>{el.innerHTML=markJa(el.innerHTML)});
 async function ask(question){
  const out=document.getElementById('out'),go=document.getElementById('go');
  go.disabled=true;out.innerHTML='<div class="card">检索与生成中…</div>';
@@ -66,10 +74,10 @@ async function ask(question){
   let h=`<div class="card"><div class="answer ${d.refusal?'refusal':''}">${fmtAnswer(d.answer||'')}</div>`;
   h+=`<div class="meta"><span class="tag">${d.strategy}·top${d.top_k}</span><span class="tag">${d.model}</span><span>${d.latency_ms}ms</span><span>req: ${d.request_id}</span>${d.citation_parse_warning?'<span style="color:#b45309">⚠ 引用解析告警</span>':''}</div>`;
   if(d.citations&&d.citations.length){h+=`<details open><summary>引用来源（${d.citations.length}）</summary>`;
-   d.citations.forEach(c=>{h+=`<div class="cite"><b${jaAttr(c.section_title)}>【${c.label}】${esc(c.section_title)}</b> <span style="color:var(--muted)">${c.source_id}${c.page_number?' p.'+c.page_number:''}</span><div${jaAttr(c.snippet)}>${esc(c.snippet)}</div></div>`});
+   d.citations.forEach(c=>{h+=`<div class="cite"><b${jaTitle(c)}>【${c.label}】${esc(c.section_title)}</b> <span style="color:var(--muted)">${c.source_id}${c.page_number?' p.'+c.page_number:''}</span><div${jaTitle(c)}>${esc(c.snippet)}</div></div>`});
    h+='</details>'}
   h+=`<details><summary>检索证据（${d.retrieval.length}，含分数）</summary>`;
-  d.retrieval.forEach(x=>{h+=`<div class="hit"><div class="h-head"><b${jaAttr(x.section_title)}>${esc(x.section_title||x.chunk_id)}</b><span class="score">${x.score.toFixed(3)} · ${x.method}</span><span class="src">${x.source_id}${x.page_number?' p.'+x.page_number:''}</span></div><div class="snippet"${jaAttr(x.snippet)}>${esc(x.snippet)}</div></div>`});
+  d.retrieval.forEach(x=>{h+=`<div class="hit"><div class="h-head"><b${jaTitle(x)}>${esc(x.section_title||x.chunk_id)}</b><span class="score">${x.score.toFixed(3)} · ${x.method}</span><span class="src">${x.source_id}${x.page_number?' p.'+x.page_number:''}</span></div><div class="snippet"${jaAttr(x.snippet)}>${esc(x.snippet)}</div></div>`});
   h+='</details></div>';
   out.innerHTML=h;
  }catch(e){out.innerHTML=`<div class="card err">网络错误：${esc(String(e))}</div>`}
@@ -82,7 +90,10 @@ function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;',
 // 避免零/将/直等统一汉字被同一字体渲染成错误语言的字形
 function fmtAnswer(a){
  const m=String(a).split(/\n(?=【中文】)/);
- return m.map(seg=>JA_RE.test(seg)&&!seg.startsWith('【中文】')?`<span lang="ja">${esc(seg)}</span>`:`<span>${esc(seg)}</span>`).join('\n');
+ return m.map(seg=>{
+  if(JA_RE.test(seg)&&!seg.startsWith('【中文】'))return `<span lang="ja">${esc(seg)}</span>`;
+  return `<span>${markJa(esc(seg))}</span>`; // 中文段：括号内日文原词逐组标注
+ }).join('\n');
 }
 </script>
 </body>

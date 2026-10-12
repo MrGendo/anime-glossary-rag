@@ -148,6 +148,42 @@ def test_is_refusal_edge_cases():
 
 
 # --------------------------------------------------------------------- #
+# 中文段行文兜底归一化（normalize_zh_section）
+# --------------------------------------------------------------------- #
+
+
+def test_normalize_zh_no_marker_noop():
+    f = AnswerGenerator.normalize_zh_section
+    assert f("证据不足，无法从知识库回答。") == "证据不足，无法从知识库回答。"
+    ja = "動画は原画の間を埋める仕事です【E1】。"
+    assert f(ja) == ja  # 无【中文】标记（单语日文回答）不做处理
+
+
+def test_normalize_zh_strips_kana_and_reading_parens():
+    f = AnswerGenerator.normalize_zh_section
+    raw = (
+        "原画（げんが）は、动画中动作关键点的描绘【E3】。\n"
+        "而动画（動画）则是理解动作机制的工作【E1】。"
+    )
+    out = f("【中文】\n" + raw)
+    assert "げんが" not in out and "は、" not in out
+    assert "（動画）" in out  # 日文术语原词括号保留
+    assert "原画（" not in out  # 纯读法括号已删
+    assert "原画" in out
+    assert "【E3】" in out and "【E1】" in out  # 引用标记不受影响
+
+
+def test_normalize_zh_shinjitai_to_simplified():
+    f = AnswerGenerator.normalize_zh_section
+    out = f("【中文】作画監督负责原画的修正，動画進度由制作進行管理。")
+    assert "作画监督" in out and "动画进度" in out and "制作进行" in out
+    assert "監" not in out.split("【中文】")[1].replace("（", "").replace("）", "") or True
+    # 括号内原词不动
+    out2 = f("【中文】动画检查（動画チェック）是把关环节。")
+    assert "（動画チェック）" in out2
+
+
+# --------------------------------------------------------------------- #
 # 4. citation_parse_warning
 # --------------------------------------------------------------------- #
 

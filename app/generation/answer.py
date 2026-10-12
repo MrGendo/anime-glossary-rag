@@ -37,6 +37,18 @@ class GenerationResult(BaseModel):
 
 #: 回答中【E{n}] 引用标记（全角方括号），n 为 1..len(hits)。
 _CITATION_RE = re.compile(r"【E(\d+)】")
+#: 中文段兜底归一化：假名 / 括号组 / 纯读法括号判定
+_ZH_MARKER = "【中文】"
+_KANA_RE = re.compile(r"[\u3040-\u309f\u30a0-\u30ff]+")
+_PAREN_RE = re.compile(r"（[^（）]*）")
+_PURE_READING_RE = re.compile(r"^[\u3040-\u309f\u30a0-\u30ff\u30fc\u30fb\s]*$")
+#: 日文新字体→简体（仅作用于中文段括号外；括号内日文原词保持原样交给前端标注）
+_SHINJITAI_MAP = str.maketrans({
+    "動": "动", "監": "监", "絵": "绘", "検": "检", "進": "进",
+    "図": "图", "済": "济", "対": "对", "変": "变", "価": "价",
+    "処": "处", "両": "两", "単": "单", "営": "营", "術": "术",
+    "録": "录", "様": "样", "権": "权", "団": "团", "圧": "压",
+})
 #: 明确拒答开头词（strip 后 startswith 判定）。
 _REFUSAL_PREFIXES = (
     "证据不足",
@@ -81,6 +93,40 @@ class AnswerGenerator:
             return True
         return any(text.startswith(p) for p in _REFUSAL_PREFIXES)
 
+    @staticmethod
+    def normalize_zh_section(answer: str) -> str:
+        """中文段行文兜底（提示词对弱模型不可靠，代码层保证）。
+
+        仅处理「【中文】」标记之后的内容：
+        1. 纯假名读法括号组（如（げんが））整组删除；
+        2. 含汉字的括号组（如（動画チェック））视为日文术语原词，保留；
+        3. 括号外：删除残留假名（は/です 等），日文新字体映射回简体，
+           日式顿号「、」改中文逗号。
+        无「【中文】」标记（单语回答）不做任何处理。
+        """
+        if _ZH_MARKER not in (answer or ""):
+            return answer
+        head, _, zh = answer.partition(_ZH_MARKER)
+        out: list[str] = []
+        pos = 0
+        for m in _PAREN_RE.finditer(zh):
+            outside = zh[pos:m.start()]
+            outside = _KANA_RE.sub("", outside)
+            outside = outside.translate(_SHINJITAI_MAP)
+            outside = outside.replace("、", "，")
+            out.append(outside)
+            inner = m.group(0)[1:-1]
+            if not _PURE_READING_RE.match(inner):
+                out.append(m.group(0))  # 日文术语原词括号，原文保留
+            # 纯假名读法括号：整组丢弃
+            pos = m.end()
+        tail = zh[pos:]
+        tail = _KANA_RE.sub("", tail)
+        tail = tail.translate(_SHINJITAI_MAP)
+        tail = tail.replace("、", "，")
+        out.append(tail)
+        return head + _ZH_MARKER + "".join(out)
+
     # ------------------------------------------------------------------ #
     # 主流程
     # ------------------------------------------------------------------ #
@@ -104,6 +150,7 @@ class AnswerGenerator:
         wall_ms = int((time.perf_counter() - start) * 1000)
 
         answer_text = response.text
+        answer_text = self.normalize_zh_section(answer_text)
         refusal = self.is_refusal(answer_text)
 
         chunk_ids = [getattr(h, "chunk_id", "") for h in hits]
