@@ -1,0 +1,16 @@
+# local secrets - never commit
+.env
+data/logs/
+*.sqlite
+__pycache__/
+.pytest_cache/
+.venv/
+data/raw/pages_all/
+data/raw/pages/
+data/raw/*.bin
+data/raw/*.wav
+data/raw/*.m4a
+
+# 版权原始资料与全量OCR（不入库；重建脚本见 scripts/01-…）
+アニメ基礎知識大百科.pdf
+data/raw/

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>动画术语知识库 · Layout/原画/動画 RAG</title>
+<style>
+:root{--bg:#fafafa;--fg:#1a1a2e;--muted:#6b7280;--accent:#4f46e5;--card:#fff;--border:#e5e7eb}
+@media(prefers-color-scheme:dark){:root{--bg:#111118;--fg:#e5e7eb;--muted:#9ca3af;--accent:#818cf8;--card:#1a1a24;--border:#2d2d3a}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Hiragino Sans","Noto Sans JP","Noto Sans SC",sans-serif;background:var(--bg);color:var(--fg);line-height:1.6}
+.wrap{max-width:860px;margin:0 auto;padding:24px 16px 80px}
+header{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+h1{font-size:22px}
+.badge{font-size:12px;color:var(--muted)}
+.sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+form{display:flex;gap:8px;margin-bottom:14px}
+input{flex:1;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--fg);font-size:15px}
+button{padding:12px 22px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-size:15px;cursor:pointer}
+button:disabled{opacity:.5;cursor:wait}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+.answer{white-space:pre-wrap;font-size:15px}
+.refusal{color:#b45309;font-weight:600}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;font-size:12px;color:var(--muted)}
+.tag{background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);padding:2px 8px;border-radius:6px}
+details{margin-top:12px;border-top:1px dashed var(--border);padding-top:10px}
+summary{cursor:pointer;font-size:13px;color:var(--muted)}
+.hit{margin-top:10px;padding:10px 12px;background:color-mix(in srgb,var(--fg) 4%,transparent);border-radius:8px;font-size:13px}
+.hit .h-head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.hit .score{color:var(--accent);font-family:ui-monospace,monospace;font-size:12px}
+.hit .src{color:var(--muted);font-size:12px}
+.hit .snippet{margin-top:4px;color:var(--fg);opacity:.92}
+.cite{border-left:3px solid var(--accent);padding-left:10px;margin-top:8px;font-size:13px}
+.err{border-color:#dc2626;color:#dc2626}
+#examples{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+#examples button{padding:4px 10px;font-size:12px;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);border-radius:999px}
+footer{color:var(--muted);font-size:12px;margin-top:30px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>动画术语知识库</h1><span class="badge">Layout / 原画 / 動画 职责边界</span></header>
+<div class="sub"><b>本知识库的小 topic（边界）：</b>日式动画制作中 <b>Layout（レイアウト）· 原画 · 動画（中割り）</b> 三个环节的<b>职责边界、输入输出、上下游交接与易混术语辨析</b>（含絵コンテ/演出/作画監督/動画検査/仕上げ检查/制作進行等直接相邻环节）。不含声优、音乐、宣发、商业模式、动画史。</div>
+<div class="sub">来源：《アニメーションの基礎知識大百科》（神村幸子，224页扫描 OCR，549 词条）+ B站《从零学动画01》转写（12 块）· 共 620 知识块</div>
+<div id="examples"></div>
+<form id="f"><input id="q" placeholder="例：レイアウト和絵コンテ有什么区别？" autocomplete="off"><button id="go">提问</button></form>
+<div id="out"></div>
+<footer>回答仅基于知识库证据并带来源引用；证据不足时将拒答。</footer>
+</div>
+<script>
+const EX=["レイアウト（LO）是什么？","原画和動画的职责怎么区分？","動画チェック是做什么的？","中割り是什么作业？","作画監督有哪几类？","まき直し是什么意思？"];
+const ex=document.getElementById('examples');
+EX.forEach(t=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.onclick=()=>{document.getElementById('q').value=t;ask(t)};ex.appendChild(b)});
+async function ask(question){
+ const out=document.getElementById('out'),go=document.getElementById('go');
+ go.disabled=true;out.innerHTML='<div class="card">检索与生成中…</div>';
+ try{
+  const r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question})});
+  const d=await r.json();
+  if(!r.ok){out.innerHTML=`<div class="card err">请求失败（${d.detail?.error||r.status}）· request_id=${d.detail?.request_id||''}</div>`;return}
+  let h=`<div class="card"><div class="answer ${d.refusal?'refusal':''}">${esc(d.answer||'')}</div>`;
+  h+=`<div class="meta"><span class="tag">${d.strategy}·top${d.top_k}</span><span class="tag">${d.model}</span><span>${d.latency_ms}ms</span><span>req: ${d.request_id}</span>${d.citation_parse_warning?'<span style="color:#b45309">⚠ 引用解析告警</span>':''}</div>`;
+  if(d.citations&&d.citations.length){h+=`<details open><summary>引用来源（${d.citations.length}）</summary>`;
+   d.citations.forEach(c=>{h+=`<div class="cite"><b>【${c.label}】${esc(c.section_title)}</b> <span style="color:var(--muted)">${c.source_id}${c.page_number?' p.'+c.page_number:''}</span><div>${esc(c.snippet)}</div></div>`});
+   h+='</details>'}
+  h+=`<details><summary>检索证据（${d.retrieval.length}，含分数）</summary>`;
+  d.retrieval.forEach(x=>{h+=`<div class="hit"><div class="h-head"><b>${esc(x.section_title||x.chunk_id)}</b><span class="score">${x.score.toFixed(3)} · ${x.method}</span><span class="src">${x.source_id}${x.page_number?' p.'+x.page_number:''}</span></div><div class="snippet">${esc(x.snippet)}</div></div>`});
+  h+='</details></div>';
+  out.innerHTML=h;
+ }catch(e){out.innerHTML=`<div class="card err">网络错误：${esc(String(e))}</div>`}
+ finally{go.disabled=false}
+}
+document.getElementById('f').onsubmit=e=>{e.preventDefault();const q=document.getElementById('q').value.trim();if(q)ask(q)};
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+</script>
+</body>
+</html>

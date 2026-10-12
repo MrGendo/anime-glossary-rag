@@ -1,0 +1,10 @@
+{
+ "D_lenient": {
+  "coverage": 0.2642,
+  "full": 0.2222
+ },
+ "A_lenient": {
+  "coverage": 0.0094,
+  "full": 0.0185
+ }
+}

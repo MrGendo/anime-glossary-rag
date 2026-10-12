@@ -1,0 +1,139 @@
+{
+ "total_chunks": 620,
+ "glossary": 549,
+ "video": 12,
+ "chapter": 59,
+ "empty_text": 0,
+ "short_text": 7,
+ "dup_text_pairs": 0,
+ "missing_meta": 0,
+ "missing_page_book": 0,
+ "missing_ts_video": 0,
+ "suspicious_chars_glossary": 3,
+ "headword_fixed_by_reading": 6,
+ "near_empty_body": 9,
+ "eval_unsupported_facts": 0,
+ "glossary_order_violations": 210,
+ "detail": {
+  "empty_text": [],
+  "short_text": [
+   [
+    "g0105",
+    "演出（えんしゅつ）"
+   ],
+   [
+    "g0153",
+    "カラ（から）"
+   ],
+   [
+    "g0313",
+    "前日納品（ぜんじつのうひん）"
+   ],
+   [
+    "g0379",
+    "同感語（セルシェーダー）"
+   ],
+   [
+    "g0382",
+    "長セル（ながせる）"
+   ],
+   [
+    "g0503",
+    "モノクロ（ものくろ）: 」"
+   ],
+   [
+    "g0543",
+    "ロール（ろーる）"
+   ]
+  ],
+  "dup_text": [],
+  "missing_page_book": [],
+  "missing_ts_video": [],
+  "missing_meta": [],
+  "suspicious_chars": [
+   [
+    "g0035",
+    "OUT（あうと）: （Fr.out）の略。 0%"
+   ],
+   [
+    "g0128",
+    "音響効果（おんきょうこうか）: お1）〔SE）の"
+   ],
+   [
+    "g0376",
+    "共倒れ（ともたおれ）: 〔行き倒れ）参照。 【同"
+   ]
+  ],
+  "headword_fixed": [
+   [
+    "g0055",
+    "アタリ／あたり",
+    "アタリ"
+   ],
+   [
+    "g0206",
+    "原面",
+    "原画"
+   ],
+   [
+    "g0228",
+    "作雨",
+    "作画"
+   ],
+   [
+    "g0229",
+    "作画監替",
+    "作画監督"
+   ],
+   [
+    "g0247",
+    "仕上検",
+    "仕上検査"
+   ],
+   [
+    "g0393",
+    "二豚",
+    "二原"
+   ]
+  ],
+  "near_empty_body": [
+   [
+    "g0062",
+    "あJAniCA"
+   ],
+   [
+    "g0088",
+    "色パカ"
+   ],
+   [
+    "g0097",
+    "連動曲線"
+   ],
+   [
+    "g0153",
+    "カラ"
+   ],
+   [
+    "g0215",
+    "コスチューム"
+   ],
+   [
+    "g0373",
+    "特殊効果"
+   ],
+   [
+    "g0424",
+    "美監"
+   ],
+   [
+    "g0479",
+    "本撮"
+   ],
+   [
+    "g0503",
+    "モノクロ"
+   ]
+  ]
+ },
+ "eval_unsupported_detail": []
+}

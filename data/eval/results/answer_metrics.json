@@ -1,0 +1,32 @@
+{
+ "A": {
+  "group": "A",
+  "n_questions": 60,
+  "answerable": 54,
+  "fact_coverage": 0.1132,
+  "full_fact_rate": 0.0556,
+  "refusal_accuracy": 0.0,
+  "citation_validity": null,
+  "avg_latency_s": 12.38,
+  "tokens": {
+   "prompt": 5402,
+   "completion": 14467
+  }
+ },
+ "D": {
+  "group": "D",
+  "n_questions": 60,
+  "answerable": 54,
+  "fact_coverage": 0.3491,
+  "full_fact_rate": 0.2407,
+  "refusal_accuracy": 1.0,
+  "citation_validity": 0.6292,
+  "avg_latency_s": 5.7,
+  "tokens": {
+   "prompt": 45715,
+   "completion": 5855
+  }
+ },
+ "ts": "2026-10-12 14:22:32",
+ "model": "glm-4-flash"
+}

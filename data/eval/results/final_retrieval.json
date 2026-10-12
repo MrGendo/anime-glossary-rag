@@ -1,0 +1,115 @@
+{
+ "bm25": {
+  "n": 54,
+  "recall@5": 0.8256,
+  "mrr@5": 0.7614,
+  "hit@5": 0.9074,
+  "latency_avg_ms": 0.6
+ },
+ "vector": {
+  "n": 54,
+  "recall@5": 0.4059,
+  "mrr@5": 0.4877,
+  "hit@5": 0.5,
+  "latency_avg_ms": 8.3
+ },
+ "hybrid": {
+  "n": 54,
+  "recall@5": 0.8596,
+  "mrr@5": 0.7793,
+  "hit@5": 0.9444,
+  "latency_avg_ms": 8.7
+ },
+ "per_type": {
+  "bm25": {
+   "term_def": {
+    "n": 24,
+    "rec": 0.958,
+    "mrr": 0.917
+   },
+   "term_contrast": {
+    "n": 13,
+    "rec": 0.859,
+    "mrr": 0.827
+   },
+   "process_flow": {
+    "n": 10,
+    "rec": 0.65,
+    "mrr": 0.417
+   },
+   "multi_chunk": {
+    "n": 6,
+    "rec": 0.486,
+    "mrr": 0.533
+   },
+   "insufficient": {
+    "n": 1,
+    "rec": 1.0,
+    "mrr": 1.0
+   }
+  },
+  "vector": {
+   "term_def": {
+    "n": 24,
+    "rec": 0.604,
+    "mrr": 0.597
+   },
+   "term_contrast": {
+    "n": 13,
+    "rec": 0.256,
+    "mrr": 0.462
+   },
+   "process_flow": {
+    "n": 10,
+    "rec": 0.15,
+    "mrr": 0.2
+   },
+   "multi_chunk": {
+    "n": 6,
+    "rec": 0.431,
+    "mrr": 0.667
+   },
+   "insufficient": {
+    "n": 1,
+    "rec": 0.0,
+    "mrr": 0.0
+   }
+  },
+  "hybrid": {
+   "term_def": {
+    "n": 24,
+    "rec": 1.0,
+    "mrr": 0.903
+   },
+   "term_contrast": {
+    "n": 13,
+    "rec": 0.859,
+    "mrr": 0.91
+   },
+   "process_flow": {
+    "n": 10,
+    "rec": 0.65,
+    "mrr": 0.35
+   },
+   "multi_chunk": {
+    "n": 6,
+    "rec": 0.625,
+    "mrr": 0.681
+   },
+   "insufficient": {
+    "n": 1,
+    "rec": 1.0,
+    "mrr": 1.0
+   }
+  }
+ },
+ "ts": "2026-10-12 13:27:51",
+ "set": "final60",
+ "rerank": {
+  "n": 54,
+  "recall@5": 0.6667,
+  "mrr@5": 0.4222,
+  "hit@5": 0.7593,
+  "latency_avg_ms": 638.5
+ }
+}
